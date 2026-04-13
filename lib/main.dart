@@ -96,7 +96,7 @@ class _AccountDeletionPageState extends State<AccountDeletionPage> {
             _passwordController.clear();
             _nicknameController.clear();
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(deletionSuccess['message'] ?? 'Conta excluida com sucesso.')),
+              SnackBar(content: Text(deletionSuccess['message'] ?? 'Account successfully deleted.')),
             );
           } else {
             print('result: $result');
