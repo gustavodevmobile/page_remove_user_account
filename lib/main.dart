@@ -95,41 +95,53 @@ class _AccountDeletionPageState extends State<AccountDeletionPage> {
             _emailController.clear();
             _passwordController.clear();
             _nicknameController.clear();
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(deletionSuccess['message'] ?? 'Conta excluida com sucesso.')),
-            );
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  backgroundColor: Colors.green[600],
+                  content: Text(
+                    deletionSuccess['message'] ?? 'Account successfully deleted.',
+                  ),
+                ),
+              );
+            }
           } else {
-            print('result: $result');
             setState(() {
               isAuthenticating = false;
             });
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  backgroundColor: Colors.red[600],
+                  content: Text(
+                    deletionSuccess['error'] ??
+                        'Error deleting account. Please try again later.',
+                  ),
+                ),
+              );
+            }
+          }
+        } else {
+          if (mounted && result != null) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
+                backgroundColor: Colors.red[600],
                 content: Text(
-                  deletionSuccess['error'] ?? 'Erro ao excluir conta. Tente novamente mais tarde.',
+                  'Failed to authenticate. Please check your credentials and try again.',
                 ),
               ),
             );
           }
-        } else {
-          print('Authentication error: ${result!["error"]}');
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                result["error"] ?? 'Erro de autenticacao. Verifique suas credenciais e tente novamente.',
-              ),
-            ),
-          );
           setState(() {
             isAuthenticating = false;
           });
         }
       } catch (e) {
-        print('Error during authentication: $e');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
+            backgroundColor: Colors.red[600],
             content: Text(
-              'Erro ao conectar com o servidor. Verifique a conexao e tente novamente.',
+              'Error connecting to the server. Check your connection and try again.',
             ),
           ),
         );
@@ -383,12 +395,14 @@ class UserService {
         return data;
       } else {
         print('Failed to authenticate: ${response.statusCode}');
+        final data = jsonDecode(response.body);
         return {
-          "error": "Authentication failed with status ${response.statusCode}",
+          "error":
+              data['error'] ??
+              'Failed to authenticate. Please check your credentials and try again.',
         };
       }
     } catch (e) {
-      print('Error fetching delete account info: $e');
       return {"error": "Error fetching delete account info: $e"};
     }
   }
@@ -405,11 +419,17 @@ class UserService {
       );
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return {'success': data['success'] ?? false, 'message': data['message'] ?? 'Account deletion successful.'};
+        return {
+          'success': data['success'] ?? false,
+          'message': data['message'] ?? 'Account deletion successful.',
+        };
       } else {
         print('Failed to authenticate: ${response.statusCode}');
         final data = jsonDecode(response.body);
-        return {'success': data['success'] ?? false, 'error': data['error'] ?? 'Account deletion failed.'};
+        return {
+          'success': data['success'] ?? false,
+          'error': data['error'] ?? 'Account deletion failed.',
+        };
       }
     } catch (e) {
       print('Error deleting account: $e');
